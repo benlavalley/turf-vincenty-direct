@@ -92,7 +92,7 @@ module.exports = function(point1, distance, bearing, units) {
     C = f / 16 * cosSqAlpha * (4 + f * (4 - 3 * cosSqAlpha)),
     L = lambda - (1 - C) * f * sinAlpha * (sigma + C * sinSigma * (cos2SigmaM + C * cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM))),
     revAz = Math.atan2(sinAlpha, -tmp); // final bearing
-  return point([toDeg(y2), coordinates1[0] + toDeg(L)]);
+    return point([coordinates1[0] + toDeg(L), toDeg(y2)]);
 };
 
 function toRad(degree) {
