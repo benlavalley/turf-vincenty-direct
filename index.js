@@ -1,6 +1,6 @@
 //http://en.wikipedia.org/wiki/Vincenty%27s_formulae
 //https://gist.github.com/mathiasbynens/354587
-var point = require('turf-point');
+var turf = require('@turf/turf');
 
 /**
  * Takes a {@link Point} and calculates the location of a destination point given a distance in degrees, radians, miles, or kilometers; and bearing in degrees. This uses the [Vincenty's Formulae](https://en.wikipedia.org/wiki/Vincenty%27s_formulae) to account for global curvature.
@@ -10,7 +10,7 @@ var point = require('turf-point');
  * @param {Feature<Point>} start starting point
  * @param {Number} distance distance from the starting point
  * @param {Number} bearing ranging from -180 to 180
- * @param {String} units miles, kilometers, degrees, or radians
+ * @param {String} units miles, kilometers, feet, or meters
  * @returns {Feature<Point>} destination point
  * @example
  * var point = {
@@ -40,22 +40,22 @@ var point = require('turf-point');
 
 module.exports = function(point1, distance, bearing, units) {
   var coordinates1 = point1.geometry.coordinates;
-  var R;
+  var s;
   switch (units) {
     case 'miles':
-      R = 3960;
+      s = distance * 1609.34;
       break;
     case 'kilometers':
-      R = 6373;
+      s = distance * 1000;
       break;
-    case 'degrees':
-      R = 57.2957795;
+    case 'meters':
+      s = distance;
       break;
-    case 'radians':
-      R = 1;
+    case 'feet':
+      s = distance * 0.3048;
       break;
     case undefined:
-      R = 6373;
+      s = distance;
       break;
     default:
       throw new Error('unknown option given to "units"');
@@ -63,7 +63,6 @@ module.exports = function(point1, distance, bearing, units) {
   var a = 6378137, // length of semi-major axis of the ellipsoid (radius at equator);  (6378137.0 metres in WGS-84)
     b = 6356752.3142, // length of semi-minor axis of the ellipsoid (radius at the poles); (6356752.314245 meters in WGS-84)
     f = 1 / 298.257223563, // flattening of the ellipsoid; (1/298.257223563 in WGS-84)
-    s = distance,
     alpha1 = toRad(bearing),
     sinAlpha1 = Math.sin(alpha1),
     cosAlpha1 = Math.cos(alpha1),
@@ -92,7 +91,7 @@ module.exports = function(point1, distance, bearing, units) {
     C = f / 16 * cosSqAlpha * (4 + f * (4 - 3 * cosSqAlpha)),
     L = lambda - (1 - C) * f * sinAlpha * (sigma + C * sinSigma * (cos2SigmaM + C * cosSigma * (-1 + 2 * cos2SigmaM * cos2SigmaM))),
     revAz = Math.atan2(sinAlpha, -tmp); // final bearing
-    return point([coordinates1[0] + toDeg(L), toDeg(y2)]);
+    return new turf.point([coordinates1[0] + toDeg(L), toDeg(y2)]);
 };
 
 function toRad(degree) {
